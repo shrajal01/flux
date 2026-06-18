@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Flux | Launch Squad</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0A0A0B;
+            color: #e5e2e3;
+        }
+        /* Custom scrollbar for minimalist performance feel */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #494454;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d0bcff;
+        }
+        .message-glow-left {
+            box-shadow: -20px 0 20px -10px rgba(208, 188, 255, 0.05);
+        }
+        .pulse-presence {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.2); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#131314",
+                        "primary-fixed-dim": "#d0bcff",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#001f26",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "outline": "#958ea0",
+                        "on-tertiary-container": "#003111",
+                        "secondary-container": "#03b5d3",
+                        "primary-container": "#a078ff",
+                        "surface-container": "#201f20",
+                        "inverse-on-surface": "#313031",
+                        "tertiary-container": "#00a74b",
+                        "on-primary-fixed-variant": "#5516be",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353436",
+                        "on-primary-container": "#340080",
+                        "surface-bright": "#3a393a",
+                        "outline-variant": "#494454",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e3",
+                        "on-surface": "#e5e2e3",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "primary-fixed": "#e9ddff",
+                        "inverse-surface": "#e5e2e3",
+                        "on-primary-fixed": "#23005c",
+                        "on-primary": "#3c0091",
+                        "inverse-primary": "#6d3bd7",
+                        "on-secondary": "#003640",
+                        "secondary-fixed": "#acedff",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "primary": "#d0bcff",
+                        "background": "#131314",
+                        "tertiary-fixed": "#6bff8f",
+                        "tertiary": "#4ae176",
+                        "on-tertiary-fixed": "#002109",
+                        "on-tertiary": "#003915",
+                        "surface-container-lowest": "#0e0e0f",
+                        "surface-tint": "#d0bcff",
+                        "on-error": "#690005",
+                        "secondary": "#4cd7f6",
+                        "on-surface-variant": "#cbc3d7",
+                        "surface-container-low": "#1c1b1c",
+                        "surface-variant": "#353436",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#00424e",
+                        "surface-dim": "#131314",
+                        "surface-container-high": "#2a2a2b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-safe": "32px",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "mono-sm": ["Geist"],
+                        "label-md": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="overflow-hidden">
+<!-- Sidebar (Shared Component: SideNavBar) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface/70 backdrop-blur-3xl border-r border-outline-variant/10 flex flex-col py-xl px-md gap-lg z-50">
+<div class="flex items-center gap-md mb-xl">
+<div class="font-headline-md text-headline-md font-bold text-primary">Flux</div>
+<span class="font-mono-sm text-mono-sm text-tertiary bg-tertiary/10 px-sm py-xs rounded">Active Now</span>
+</div>
+<nav class="flex flex-col gap-sm">
+<div class="flex items-center gap-md px-md py-sm rounded-lg cursor-pointer active:scale-95 transition-all text-on-surface-variant font-medium hover:text-primary">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm rounded-lg cursor-pointer active:scale-95 transition-all text-on-surface-variant font-medium hover:text-primary">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md">Messages</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm rounded-lg cursor-pointer active:scale-95 transition-all text-primary font-bold">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Groups</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm rounded-lg cursor-pointer active:scale-95 transition-all text-on-surface-variant font-medium hover:text-primary">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+</nav>
+<div class="mt-auto pt-lg border-t border-outline-variant/10">
+<div class="flex items-center gap-md px-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant/20">
+<img alt="User profile" data-alt="A professional portrait of a woman with a confident expression, set against a dark, moody background with subtle violet rim lighting. The style is sleek and minimalist, emphasizing high-fidelity digital art aesthetics and sharp focus. The lighting is low-key, highlighting the contours of the face with a soft cinematic glow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt5sgWq6s_ls9eH1GwsewTPKXAAP4aGb12Mj6Xw-aMYFm6gY8UqBBx5YWaeELCknqYycWpSS1Y8i46XLzfAWGf9fpam3do-qMxKG8Nnx-aJUfGPNPGiQgYCp4hDDuCaWM5KjckmqEJxajK6F0XG4Y8rFPjaW__-FuB-8f5FuRL9WZevLBQQkeQ72UVJIC_mn1i7WC2HOFSmMH56i0zDfGRAz_ve6xxEiRXi6Y0eiNYrSMgd1VYU1ejGqBshKutEJIffb-OFXj5sA"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold">Alex Chen</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest">Premium Member</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Header (Shared Component: TopAppBar) -->
+<header class="fixed top-0 right-0 left-[280px] h-16 bg-surface/70 backdrop-blur-md border-b border-outline-variant/10 flex items-center justify-between px-lg w-full z-40">
+<div class="flex items-center gap-md">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden border border-primary/20">
+<img alt="Launch Squad" data-alt="A diverse group of young professionals collaborating in a high-tech studio environment with large monitors and neon violet ambient lighting. The scene is shot from a low angle to give a sense of energy and importance, with a minimalist charcoal black furniture arrangement in the background. The atmosphere is energetic yet professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGaDa_qYOFHxfn6wIJPHA5Ac87nUZHqQL_uaAivv1csFSdlpkqubPF4dY_06-ur-m10ZXVU5T7KYNAjY4v-OuDfNp4tQzN_zvfc2hMXuTFCiC3eIYfQAYtwgNGjU96DhchHUgxnK_ZqiczACrZ8A3TEjKTuqIsxfuIiR7o6NyRo-QB9YZe9FYsDRQfIghAlxYAC1AHyAepMp4zQsWKAPrWZ8G5GKEBVlNCX3PFpzSwmlK2B7nscbuKguyOFDRDhR70EEnI8AAMFw"/>
+</div>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-tertiary border-2 border-surface rounded-full"></div>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-black text-primary leading-tight">Launch Squad</h1>
+<div class="flex items-center gap-sm">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">12 Members</span>
+<span class="w-1 h-1 bg-outline-variant rounded-full"></span>
+<span class="font-mono-sm text-[11px] text-tertiary">4 Active Now</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center bg-surface-container-low px-md py-xs rounded-full border border-outline-variant/10 group focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface w-48 transition-all" placeholder="Search conversation..." type="text"/>
+</div>
+<button class="p-sm hover:bg-surface-container-highest/50 rounded-lg transition-all duration-300">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+<button class="p-sm hover:bg-surface-container-highest/50 rounded-lg transition-all duration-300">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 h-screen flex flex-col bg-background">
+<!-- Chat Area -->
+<section class="flex-1 overflow-y-auto px-xl py-lg space-y-xl" id="chat-scroller">
+<!-- Notification Entry -->
+<div class="flex justify-center">
+<div class="px-md py-xs bg-surface-container-low/50 rounded-full border border-outline-variant/5">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant/60">Sarah joined the group</span>
+</div>
+</div>
+<!-- Message Group: Other -->
+<div class="flex gap-lg group">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden flex-shrink-0 border border-outline-variant/10 mt-1">
+<img alt="Sarah" data-alt="A portrait of a young woman named Sarah with bright, energetic eyes and a creative professional look, illuminated by soft violet and teal neon lights from the side. The background is a blurred charcoal black studio, creating a premium digital portrait feel with high contrast and sharp detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDIpwAQFtTpiGwyRDOyDxPji5Ixav6rBYu6DRltZAVVsly79NmKm4JiBRfFNiPRRA44wsA1ViMB183lCVzYRfGZUprMWHuE1U4seFVxVe25DfsPE_msPu3xtO7owSkLbslNBAlVT0O6_qt88q1gCgt_-tbuUUgy3YSTfJLC8WoUvPYSfT4NNSFDKWmFn6p48XPI-YKorBWFCJ-0CIYUSDWha3iC0IFMKCgPmTaMOwc8f2-mYWaNXLhND0Thb-zete2Rh12M_39gA"/>
+</div>
+<div class="max-w-2xl flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md font-bold text-primary">Sarah</span>
+<span class="font-mono-sm text-[10px] text-on-surface-variant">10:42 AM</span>
+</div>
+<div class="relative border-l-2 border-primary/40 pl-lg py-sm message-glow-left">
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                            Hey team! Just finished the final prototype for the dashboard. Should I drop the Figma link here or wait for the sync?
+                        </p>
+</div>
+</div>
+</div>
+<!-- Message Group: Other -->
+<div class="flex gap-lg group">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden flex-shrink-0 border border-outline-variant/10 mt-1">
+<img alt="Mike" data-alt="A professional portrait of a man named Mike, characterized by a sharp jawline and focused expression. The lighting is high-end studio style with deep charcoal shadows and a subtle purple glow reflecting off his dark clothing. The image captures a sense of precision and modern tech leadership." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJ8TSs4_VVnnFEHzaC-CMYJqnj-LOVDtz5BJc5d8PO-PMZ2Eq5in5qN8a2VhbLK-fMkVkt2FxAZwCv3c-55rOjJ_YpY4eWIC_g2c8VlMKGUlHXyodsGVuZeNZRwspIuYVnkEHPdvjSuyGCIpKY4CxBCx2FQxnMyHokbgkyAEKObzMlmM7R6wGM9cd5O5Sl2PiJUpQQJ0-Wk-MiV4hsDOhDFfnYDCTuB3LVu3_7GfPdvSGAImJYHEm7XPGOad89jVLZSC5bQIuWRQ"/>
+</div>
+<div class="max-w-2xl flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md font-bold text-secondary">Mike</span>
+<span class="font-mono-sm text-[10px] text-on-surface-variant">10:45 AM</span>
+</div>
+<div class="border-l-2 border-secondary/40 pl-lg py-sm">
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                            Drop it now. I'm reviewing the backend hooks and want to make sure the data mapping matches the UI states. Especially the real-time presence rings.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Message Group: Self (Alex) -->
+<div class="flex gap-lg flex-row-reverse group">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden flex-shrink-0 border border-primary/30 mt-1">
+<img alt="Alex" data-alt="A sharp, digital portrait of Alex, a tech professional with a clean-cut aesthetic. The lighting is cinematic with a focus on violet and deep gray tones. The image is crisp and professional, fitting into a high-end social messaging interface designed for productivity and speed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3aTTJlMepFDvoOswCzs9-qNl0wagKT6pWOo5mekKIlOuKUeX0A9dYP-DjXMmnX2SZBksXHBuR4kVd6InQVVgP3vKVhtxxe2AHmmLjHsUbqrrId8NwCIG8AKy3kxowQqs0dCSh5sdD1A4N7t1JpR3xlJ7qT7IzZhnu6rTrCgIEE1sRbafOk5N3t0GOMU-hrj88QVwyGlwi4XK5dYCOMdbrNSnAh0Wz-XT1I3p2xsBilF1Dvsda3hSmEU0LAqq0NKi3sOg4175M6Q"/>
+</div>
+<div class="max-w-2xl flex flex-col items-end gap-xs">
+<div class="flex items-center gap-sm flex-row-reverse">
+<span class="font-label-md text-label-md font-bold text-on-surface">You</span>
+<span class="font-mono-sm text-[10px] text-on-surface-variant">10:48 AM</span>
+</div>
+<div class="border-r-2 border-primary pl-lg pr-lg py-sm text-right">
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                            Agreed. I'm looking at the shader background performance on mobile right now. Sarah, make sure the glassmorphism blurs are optimized for Safari.
+                        </p>
+</div>
+<div class="flex items-center gap-xs mt-xs">
+<span class="font-mono-sm text-[10px] text-on-surface-variant italic">Sarah and Mike read 10:49 AM</span>
+<span class="material-symbols-outlined text-tertiary text-xs" data-icon="done_all" style="font-size: 14px;">done_all</span>
+</div>
+</div>
+</div>
+<!-- Realtime Activity Indicators -->
+<div class="flex items-center gap-md py-md">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border border-surface bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Sarah" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDO0q-grfnQVyYKFBTNlMnuM_77sYJSGPYMACkE0xPSCtn-XP1debPHGId0cFJGqYENu0HexVXd1I6FoS99ilTj-aYqRpKfPHnUDo_DcuRHoVsS6dbmqbHbq5s1QkvsD2vu0o1uJw6gOeDsKI3-cbn_KDJvBN6VtnyVjiVIkaCaQRjGbW_ifqWDf7zK_4zdNbi4ZjNuCuNA-37Lv6xlsDHjGt5knwieSzY53aTDk9F11FPr1T1-QSHP2cadv1VcKLU_2DLQXDcRRg"/>
+</div>
+<div class="w-6 h-6 rounded-full border border-surface bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Mike" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvmyQxnBhzhMt5at6hh29ozsafbKDhi7bbsKp5pnYvScU_BhBOLA9COl7irmS0YkBBJlKfMyzPHgUvbzYMdTZ4b0d8nsiNSie779EuL_l4Veuj4RcSezq3fzUil1gVe9DzKffDL3CaHpiOSKFoweHrbNQIx7sGEQAZh13tV02XQT0eTvMQFsnHGUnuYZbSjqeptF9plDUeBul5ydzKewtYSS0cAzkZwu7DhYkZWxAuxMhpcrQqAvyP0fFtfpxgnz8lxtzUiLnAAg"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="flex gap-1">
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">Mike is typing...</span>
+</div>
+</div>
+</section>
+<!-- Input Area -->
+<footer class="p-lg border-t border-outline-variant/10 bg-surface/30 backdrop-blur-sm">
+<div class="max-w-4xl mx-auto flex items-end gap-md">
+<button class="p-sm hover:bg-surface-container-highest/50 rounded-lg transition-all mb-1">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="add_circle">add_circle</span>
+</button>
+<div class="flex-1 relative">
+<textarea class="w-full bg-transparent border-b border-outline-variant/30 focus:border-primary py-sm px-xs text-body-md font-body-md text-on-surface resize-none focus:ring-0 transition-colors duration-300" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Message #launch-squad" rows="1"></textarea>
+</div>
+<div class="flex items-center gap-sm mb-1">
+<button class="p-sm hover:bg-surface-container-highest/50 rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="mood">mood</span>
+</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-bold px-lg py-sm rounded-lg transition-all active:scale-95 flex items-center gap-sm">
+<span class="font-label-md text-label-md">SEND</span>
+<span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<div class="max-w-4xl mx-auto flex items-center justify-between mt-sm px-xs">
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="font-mono-sm text-[10px] text-on-surface-variant">CMD+ENTER to send</span>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-xs cursor-pointer group">
+<div class="w-2 h-2 bg-tertiary rounded-full pulse-presence"></div>
+<span class="font-mono-sm text-[10px] text-tertiary group-hover:underline">Studio 1 Latency: 24ms</span>
+</div>
+</div>
+</div>
+</footer>
+</main>
+<!-- Command Palette (Floating Component) -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-xl bg-background/40 backdrop-blur-sm" id="command-palette">
+<div class="w-full max-w-xl bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden shadow-2xl">
+<div class="flex items-center px-lg py-md border-b border-outline-variant/10">
+<span class="material-symbols-outlined text-primary mr-md" data-icon="terminal">terminal</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-headline-sm font-headline-sm text-on-surface" placeholder="Search members, files, or actions..." type="text"/>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant px-sm py-xs bg-surface-container rounded border border-outline-variant/10">ESC</span>
+</div>
+<div class="p-md space-y-xs">
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-highest rounded-lg cursor-pointer group transition-colors">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="person_add">person_add</span>
+<span class="font-label-md text-label-md">Add member to squad</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">⌘A</span>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-highest rounded-lg cursor-pointer group transition-colors">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="file_upload">file_upload</span>
+<span class="font-label-md text-label-md">Share Figma prototype</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">⌘U</span>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-highest rounded-lg cursor-pointer group transition-colors">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="call">call</span>
+<span class="font-label-md text-label-md">Start audio huddle</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">⌘H</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Micro-interactions and Command Palette logic
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                const palette = document.getElementById('command-palette');
+                palette.classList.toggle('hidden');
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('command-palette').classList.add('hidden');
+            }
+        });
+
+        // Close palette on backdrop click
+        document.getElementById('command-palette').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // Auto-scroll chat to bottom
+        const scroller = document.getElementById('chat-scroller');
+        scroller.scrollTop = scroller.scrollHeight;
+
+        // Simulate typing animation logic
+        setTimeout(() => {
+            const typingIndicator = document.querySelector('.animate-bounce').closest('.flex.items-center.gap-md');
+            if (typingIndicator) {
+                // Potential to toggle visibility for realism
+            }
+        }, 5000);
+    </script>
+</body></html>
