@@ -9,8 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 
 SECRET_KEY = "flux_super_secret_key_2026"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = 43200
+REFRESH_TOKEN_EXPIRE_DAYS = 21
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],

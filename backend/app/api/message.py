@@ -83,6 +83,10 @@ async def send_message(
                     new_message.sender_id,
                 "content":
                     new_message.content,
+                 "id":
+                    new_message.id,
+                "created_at":
+                    new_message.created_at.isoformat(),
             })
         )
 
@@ -108,7 +112,7 @@ def get_messages(
     page: int = 1,
     limit: int = Query(
         default=20,
-        le=100
+        le=1000
     ),
     db: Session = Depends(get_db)
 ):

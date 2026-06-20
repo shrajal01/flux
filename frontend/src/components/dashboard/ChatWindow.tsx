@@ -15,10 +15,6 @@ export default function ChatWindow({
   conversationName,
 }: Props) {
 
-  console.log(
-    "CHATWINDOW RENDERED 🔥"
-  );
-
   const [messages, setMessages] =
     useState<any[]>([]);
 
@@ -34,48 +30,47 @@ export default function ChatWindow({
   const socketRef =
     useRef<WebSocket | null>(null);
 
- const fetchMessages =
-  async () => {
-    try {
+  const currentUserRef =
+    useRef<any>(null);
 
-      console.log(
-        "FETCHING MESSAGES..."
-      );
+  const conversationIdRef =
+    useRef<number>(conversationId);
 
-      const response =
-        await fetch(
-          `${API_BASE_URL}/messages/${conversationId}`
-        );
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
 
-      const data =
-        await response.json();
+  const fetchMessages =
+    async () => {
+      try {
+        const response =
+          await fetch(
+            `${API_BASE_URL}/messages/${conversationId}?limit=500`
+          );
 
-      console.log(
-        "FETCHED MESSAGES:",
-        data.length
-      );
+        const data =
+          await response.json();
 
-      console.log(
-        data
-      );
+        if (!Array.isArray(data)) {
+          console.error("MESSAGES NOT ARRAY:", data);
+          return;
+        }
 
-      setMessages(data);
+        setMessages(data);
 
-    } catch (error) {
-      console.error(error);
-    }
-  };
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
   const fetchCurrentUser =
     async () => {
       try {
         const data =
           await getCurrentUser();
 
-        console.log(
-          "USER DATA:",
-          data
-        );
         setCurrentUser(data);
+        currentUserRef.current = data;
 
       } catch (error) {
         console.error(
@@ -88,23 +83,20 @@ export default function ChatWindow({
   const handleSendMessage =
     async () => {
 
-      console.log("SEND CLICKED");
+      if (!message.trim()) return;
+      if (!currentUser) return;
 
-      if (!message.trim()) {
-        console.log("EMPTY MESSAGE");
-        return;
-      }
+      const optimisticMsg = {
+        id: Date.now(),
+        conversation_id: conversationId,
+        sender_id: Number(currentUser.id),
+        content: message,
+        created_at: new Date().toISOString(),
+        status: "sent",
+      };
 
-      if (!currentUser) {
-        console.log("USER NOT LOADED");
-        return;
-      }
-
-      console.log(
-        "SENDING...",
-        message
-      );
-
+      setMessages((prev) => [...prev, optimisticMsg]);
+      setMessage("");
 
       try {
         const response =
@@ -118,10 +110,10 @@ export default function ChatWindow({
                   "application/json",
               },
 
-             body: JSON.stringify({
+              body: JSON.stringify({
                 conversation_id: conversationId,
-                sender_id: Number(currentUser.sub),
-                content: message,
+                sender_id: Number(currentUser.id),
+                content: optimisticMsg.content,
               }),
             }
           );
@@ -132,12 +124,11 @@ export default function ChatWindow({
           );
         }
 
-        setMessage("");
-
-        await fetchMessages();
-
       } catch (error) {
         console.error(error);
+        setMessages((prev) =>
+          prev.filter((m) => m.id !== optimisticMsg.id)
+        );
       }
     };
 
@@ -154,72 +145,55 @@ export default function ChatWindow({
 
   useEffect(() => {
 
-    console.log(
-        "CURRENT USER:",
-        currentUser
-    );
+  if (!currentUser) return;
 
-    console.log(
-        "CURRENT USER ID:",
-        currentUser?.id
-      );
-
-    if (!currentUser) return;
-
-    console.log(
-        "TRYING WS..."
-    );
-
-    const socket = new WebSocket(
-    `ws://127.0.0.1:8000/ws/${currentUser.sub}`
+  const socket = new WebSocket(
+    `ws://127.0.0.1:8000/ws/${currentUser.id}`
   );
 
-    socket.onopen = () => {
-      console.log(
-        "WebSocket Connected ✅",
-        currentUser.id
-      );
-    };
+  socket.onopen = () => {
+    console.log("WebSocket Connected ✅");
+  };
 
-    socket.onmessage = (event) => {
-      console.log("RAW WS:", event.data);
-
+  socket.onmessage = (event) => {
+    try {
       const payload = JSON.parse(event.data);
-
-      console.log("PARSED WS:", payload);
 
       if (
         payload.type === "message" &&
-        payload.conversation_id === conversationId
+        payload.conversation_id === conversationIdRef.current
       ) {
-        console.log("FETCHING NEW MESSAGES...");
-        fetchMessages();
+        const me = currentUserRef.current;
+        if (payload.sender_id === Number(me?.id)) return;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: payload.id,
+            conversation_id: payload.conversation_id,
+            sender_id: payload.sender_id,
+            content: payload.content,
+            created_at: payload.created_at,
+            status: "sent",
+          },
+        ]);
       }
-    };
+    } catch (e) {
+      console.error("WS PARSE ERROR:", e);
+    }
+  };
 
-    
+  socket.onclose = () => {
+    console.log("WebSocket Closed ❌");
+  };
 
-    
+  socketRef.current = socket;
 
-    socket.onclose = () => {
-      console.log(
-        "WebSocket Closed ❌",
-        currentUser.id
-      );
-    };
+  return () => {
+    socket.close();
+  };
 
-    socketRef.current = socket;
-
-    return () => {
-        socket.close();
-    };
-
-    }, [currentUser]);
-
-    console.log(
-      "MESSAGES STATE:",
-      messages.length
-    );
+}, [currentUser]);
 
   return (
     <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 h-[80vh] flex flex-col">
@@ -241,15 +215,10 @@ export default function ChatWindow({
             No messages found
           </p>
         ) : (
-            messages.map((msg) => {
+          messages.map((msg) => {
 
-              console.log(
-                "RENDERING:",
-                msg.id,
-                msg.content
-              );
             const isMine =
-                msg.sender_id === Number(currentUser?.sub);
+              msg.sender_id === Number(currentUser?.id);
 
             return (
               <div
