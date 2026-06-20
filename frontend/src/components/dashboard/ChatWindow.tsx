@@ -24,6 +24,12 @@ export default function ChatWindow({
   const [currentUser, setCurrentUser] =
     useState<any>(null);
 
+  const [typingUser, setTypingUser] =
+    useState<number | null>(null);
+
+  const typingTimeoutRef =
+    useRef<NodeJS.Timeout | null>(null);
+
   const messagesEndRef =
     useRef<HTMLDivElement>(null);
 
@@ -151,37 +157,86 @@ export default function ChatWindow({
     `ws://127.0.0.1:8000/ws/${currentUser.id}`
   );
 
-  socket.onopen = () => {
-    console.log("WebSocket Connected ✅");
-  };
+ socket.onmessage = (event) => {
+  try {
 
-  socket.onmessage = (event) => {
-    try {
-      const payload = JSON.parse(event.data);
+    const payload =
+      JSON.parse(event.data);
+
+    if (
+      payload.type === "message" &&
+      payload.conversation_id ===
+        conversationIdRef.current
+    ) {
+
+      const me =
+        currentUserRef.current;
 
       if (
-        payload.type === "message" &&
-        payload.conversation_id === conversationIdRef.current
-      ) {
-        const me = currentUserRef.current;
-        if (payload.sender_id === Number(me?.id)) return;
+        payload.sender_id ===
+        Number(me?.id)
+      ) return;
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: payload.id,
-            conversation_id: payload.conversation_id,
-            sender_id: payload.sender_id,
-            content: payload.content,
-            created_at: payload.created_at,
-            status: "sent",
-          },
-        ]);
-      }
-    } catch (e) {
-      console.error("WS PARSE ERROR:", e);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: payload.id,
+          conversation_id:
+            payload.conversation_id,
+          sender_id:
+            payload.sender_id,
+          content:
+            payload.content,
+          created_at:
+            payload.created_at,
+          status: "sent",
+        },
+      ]);
     }
-  };
+
+    if (
+      payload.type === "typing" &&
+      payload.conversation_id ===
+        conversationIdRef.current
+    ) {
+
+      const me =
+        currentUserRef.current;
+
+      if (
+        payload.user_id ===
+        Number(me?.id)
+      ) {
+        return;
+      }
+
+      setTypingUser(
+        payload.user_id
+      );
+
+      if (
+        typingTimeoutRef.current
+      ) {
+        clearTimeout(
+          typingTimeoutRef.current
+        );
+      }
+
+      typingTimeoutRef.current =
+        setTimeout(() => {
+          setTypingUser(null);
+        }, 2000);
+    }
+
+  } catch (e) {
+
+    console.error(
+      "WS PARSE ERROR:",
+      e
+    );
+
+  }
+};
 
   socket.onclose = () => {
     console.log("WebSocket Closed ❌");
@@ -266,6 +321,17 @@ export default function ChatWindow({
           })
         )}
 
+        {typingUser && (
+          <p className="
+            text-sm
+            text-zinc-400
+            italic
+            px-2
+          ">
+            User is typing...
+          </p>
+        )}
+
         <div ref={messagesEndRef} />
 
       </div>
@@ -274,11 +340,31 @@ export default function ChatWindow({
         <input
           type="text"
           value={message}
-          onChange={(e) =>
+          onChange={(e) => {
+
             setMessage(
               e.target.value
-            )
-          }
+            );
+
+            if (
+              socketRef.current &&
+              socketRef.current.readyState ===
+                WebSocket.OPEN
+            ) {
+
+              socketRef.current.send(
+                JSON.stringify({
+                  type: "typing",
+                  conversation_id:
+                    conversationId,
+                  user_id:
+                    Number(
+                      currentUser?.id
+                    ),
+                })
+              );
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               handleSendMessage();
