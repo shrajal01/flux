@@ -38,7 +38,8 @@ async def websocket_endpoint(
     )
 
     await manager.connect(
-        websocket
+        websocket,
+        user_id
     )
 
     print(

@@ -136,7 +136,7 @@ def get_messages(
 
 
 @router.patch("/{message_id}/delivered")
-def mark_delivered(
+async def mark_delivered(
     message_id: int,
     db: Session = Depends(get_db)
 ):
@@ -159,11 +159,36 @@ def mark_delivered(
     db.commit()
     db.refresh(message)
 
+    try:
+
+        await manager.send_to_user(
+            message.sender_id,
+            json.dumps(
+                {
+                    "type":
+                    "message_status",
+
+                    "message_id":
+                    message.id,
+
+                    "status":
+                    "delivered"
+                }
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "STATUS WS ERROR:",
+            e
+        )
+
     return message
 
 
 @router.patch("/{message_id}/read")
-def mark_read(
+async def mark_read(
     message_id: int,
     db: Session = Depends(get_db)
 ):
@@ -185,5 +210,13 @@ def mark_read(
 
     db.commit()
     db.refresh(message)
+
+    await manager.broadcast(
+        json.dumps({
+            "type": "message_status",
+            "message_id": message.id,
+            "status": "read",
+        })
+    )
 
     return message

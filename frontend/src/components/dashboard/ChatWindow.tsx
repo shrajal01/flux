@@ -64,6 +64,31 @@ export default function ChatWindow({
 
         setMessages(data);
 
+        if (currentUserRef.current) {
+
+          for (const msg of data) {
+
+            if (
+              msg.sender_id !==
+                Number(
+                  currentUserRef.current.id
+                ) &&
+              msg.status !== "read"
+            ) {
+
+              await fetch(
+                `${API_BASE_URL}/messages/${msg.id}/read`,
+                {
+                  method: "PATCH",
+                }
+              );
+
+            }
+
+          }
+
+        }
+
       } catch (error) {
         console.error(error);
       }
@@ -124,6 +149,22 @@ export default function ChatWindow({
             }
           );
 
+        const data =
+          await response.json();
+
+        console.log(
+          "POST RESPONSE:",
+          data
+        );
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === optimisticMsg.id
+              ? data
+              : msg
+          )
+        );
+
         if (!response.ok) {
           throw new Error(
             "Failed to send message"
@@ -157,7 +198,7 @@ export default function ChatWindow({
     `ws://127.0.0.1:8000/ws/${currentUser.id}`
   );
 
- socket.onmessage = (event) => {
+ socket.onmessage = async (event) => {
   try {
 
     const payload =
@@ -177,6 +218,13 @@ export default function ChatWindow({
         Number(me?.id)
       ) return;
 
+      await fetch(
+        `${API_BASE_URL}/messages/${payload.id}/delivered`,
+        {
+          method: "PATCH",
+        }
+      );
+
       setMessages((prev) => [
         ...prev,
         {
@@ -192,6 +240,8 @@ export default function ChatWindow({
           status: "sent",
         },
       ]);
+
+      
     }
 
     if (
@@ -226,6 +276,28 @@ export default function ChatWindow({
         setTimeout(() => {
           setTypingUser(null);
         }, 2000);
+    }
+
+    if (
+      payload.type === "message_status"
+    ) {
+
+      console.log(
+        "STATUS UPDATE RECEIVED",
+        payload
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === payload.message_id
+            ? {
+                ...msg,
+                status: payload.status,
+              }
+            : msg
+        )
+      );
+
     }
 
   } catch (e) {
@@ -315,6 +387,18 @@ export default function ChatWindow({
                       }
                     )}
                   </p>
+
+                  {isMine && (
+                    <p className="text-xs opacity-70 mt-1">
+                      {msg.status === "sent" && "✓ Sent"}
+
+                      {msg.status === "delivered" &&
+                        "✓✓ Delivered"}
+
+                      {msg.status === "read" &&
+                        "👁 Read"}
+                    </p>
+                  )}
                 </div>
               </div>
             );
