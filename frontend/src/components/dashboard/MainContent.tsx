@@ -1,8 +1,3 @@
-import Topbar from "../Topbar";
-import OnlineUsers from "../OnlineUsers";
-import ResumeConversations from "../ResumeConversations";
-import RecentActivity from "../RecentActivity";
-
 import ChatWindow from "./ChatWindow";
 
 type Props = {
@@ -31,15 +26,8 @@ export default function MainContent({
             }
           />
         ) : (
-          <div className="space-y-10">
-
-            <Topbar />
-
-            <OnlineUsers />
-
-            <ResumeConversations />
-
-            <RecentActivity />
+          <div className="flex items-center justify-center h-screen text-zinc-500">
+                Select a conversation to start chatting
 
           </div>
         )}
