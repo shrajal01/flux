@@ -196,3 +196,21 @@ def online_users():
         "online_users":
         get_online_users()
     }
+
+@router.get(
+    "/users",
+    response_model=list[UserResponse]
+)
+def get_all_users(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    users = (
+        db.query(User)
+        .filter(
+            User.id != int(current_user["sub"])
+        )
+        .all()
+    )
+
+    return users
