@@ -6,14 +6,8 @@ export default function Header() {
           ⚡
         </div>
       </div>
-
-      <h1 className="text-3xl font-bold">
-        Welcome to Flux
-      </h1>
-
-      <p className="mt-2 text-gray-400">
-        The future of realtime communication.
-      </p>
+      <h1 className="text-3xl font-bold">Welcome to Flux</h1>
+      <p className="mt-2 text-gray-400">The future of realtime communication.</p>
     </header>
   );
 }

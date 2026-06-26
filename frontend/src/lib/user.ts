@@ -1,42 +1,19 @@
 import { API_BASE_URL } from "./api";
 import { getAccessToken } from "./auth";
+import { User } from "@/types";
 
-export const getCurrentUser =
-  async () => {
-    const token =
-      getAccessToken();
+export const getCurrentUser = async (): Promise<User> => {
+  const token = getAccessToken();
 
-    console.log("TOKEN:", token);
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    const response =
-      await fetch(
-        `${API_BASE_URL}/auth/me`,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
+  if (!response.ok) {
+    throw new Error("Failed to fetch user");
+  }
 
-    console.log(
-      "STATUS:",
-      response.status
-    );
-
-    const data =
-      await response.json();
-
-    console.log(
-      "RESPONSE:",
-      data
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch user"
-      );
-    }
-
-    return data;
-  };
+  return response.json();
+};

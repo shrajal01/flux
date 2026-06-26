@@ -1,16 +1,16 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "@/lib/user";
 import { MoreVertical, Sparkles } from "lucide-react";
 
+import { getCurrentUser } from "@/lib/user";
+import { User } from "@/types";
+
 export default function Sidebar() {
-  const [user, setUser] = useState({
-    username: "",
-    email: "",
-  });
+  const [user, setUser] = useState<User>({ id: 0, username: "", email: "" });
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser = async (): Promise<void> => {
       try {
         const data = await getCurrentUser();
         setUser(data);
@@ -18,6 +18,7 @@ export default function Sidebar() {
         console.error(error);
       }
     };
+
     fetchUser();
   }, []);
 
@@ -30,12 +31,8 @@ export default function Sidebar() {
           <Sparkles size={18} />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-purple-300">
-            Flux
-          </h1>
-          <p className="text-green-400 text-sm">
-            Active Now
-          </p>
+          <h1 className="text-3xl font-bold text-purple-300">Flux</h1>
+          <p className="text-green-400 text-sm">Active Now</p>
         </div>
       </div>
 

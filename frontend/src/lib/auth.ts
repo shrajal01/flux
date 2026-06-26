@@ -1,30 +1,16 @@
-export const saveTokens = (
-  accessToken: string,
-  refreshToken: string
-) => {
-  localStorage.setItem(
-    "access_token",
-    accessToken
-  );
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
 
-  localStorage.setItem(
-    "refresh_token",
-    refreshToken
-  );
+export const saveTokens = (accessToken: string, refreshToken: string): void => {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 };
 
-export const getAccessToken = () => {
-  return localStorage.getItem(
-    "access_token"
-  );
+export const getAccessToken = (): string | null => {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
-export const logout = () => {
-  localStorage.removeItem(
-    "access_token"
-  );
-
-  localStorage.removeItem(
-    "refresh_token"
-  );
+export const logout = (): void => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 };

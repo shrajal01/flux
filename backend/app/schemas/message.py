@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class MessageCreate(BaseModel):
@@ -13,7 +14,7 @@ class MessageResponse(BaseModel):
     conversation_id: int
     sender_id: int
     content: str
-    status: str
+    status: str  # sent | delivered | read
     created_at: datetime
 
     class Config:

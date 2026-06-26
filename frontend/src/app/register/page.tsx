@@ -1,18 +1,14 @@
 import Header from "@/components/Header";
 import RegisterForm from "@/components/RegisterForm";
 
-export default function Home() {
+export default function RegisterPage() {
   return (
     <main className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
-      <div className="absolute w-[700px] h-[700px] rounded-full bg-purple-600/10 blur-3xl"></div>
+      <div className="absolute w-[700px] h-[700px] rounded-full bg-purple-600/10 blur-3xl" />
       <div className="w-full max-w-md p-8 rounded-2xl border border-white/10 bg-zinc-900/70 backdrop-blur-xl">
-
-    <Header />
-
-    <RegisterForm />
-
-  </div>
+        <Header />
+        <RegisterForm />
+      </div>
     </main>
-    
   );
 }

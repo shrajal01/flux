@@ -1,29 +1,15 @@
 "use client";
 
-import { Plus, MessageCircle, Users, X, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Plus, MessageCircle, Users, X, Check } from "lucide-react";
 
 import { API_BASE_URL } from "@/lib/api";
+import { Conversation, User } from "@/types";
 
 type Props = {
   selectedConversationId: number | null;
   setSelectedConversationId: React.Dispatch<React.SetStateAction<number | null>>;
   setSelectedConversationName: React.Dispatch<React.SetStateAction<string>>;
-};
-
-type Conversation = {
-  id: number;
-  name: string | null;
-  is_group: boolean;
-  other_user_id?: number | null;
-  other_username?: string | null;
-  created_at: string;
-};
-
-type User = {
-  id: number;
-  username: string;
-  email: string;
 };
 
 export default function ConversationPanel({
@@ -34,53 +20,53 @@ export default function ConversationPanel({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
-  // Menu state
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Dropdown menu state
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // New Chat modal
-  const [newChatOpen, setNewChatOpen] = useState(false);
-  const [newChatSearch, setNewChatSearch] = useState("");
+  // New Chat modal state
+  const [newChatOpen, setNewChatOpen] = useState<boolean>(false);
+  const [newChatSearch, setNewChatSearch] = useState<string>("");
 
-  // New Group modal
-  const [newGroupOpen, setNewGroupOpen] = useState(false);
-  const [groupName, setGroupName] = useState("");
-  const [groupSearch, setGroupSearch] = useState("");
+  // New Group modal state
+  const [newGroupOpen, setNewGroupOpen] = useState<boolean>(false);
+  const [groupName, setGroupName] = useState<string>("");
+  const [groupSearch, setGroupSearch] = useState<string>("");
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
-  const [creatingGroup, setCreatingGroup] = useState(false);
+  const [creatingGroup, setCreatingGroup] = useState<boolean>(false);
 
-  // ── helpers ──────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────
 
-  const token = () => localStorage.getItem("access_token");
+  const token = (): string | null => localStorage.getItem("access_token");
 
   const authHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${token()}`,
   });
 
-  // ── data fetching ─────────────────────────────────────────
+  // ── Data Fetching ─────────────────────────────────────────────────────────
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (): Promise<void> => {
     try {
       const res = await fetch(`${API_BASE_URL}/conversations`, {
         headers: { Authorization: `Bearer ${token()}` },
       });
       const data = await res.json();
       if (Array.isArray(data)) setConversations(data);
-    } catch (err) {
-      console.error("fetchConversations:", err);
+    } catch (error) {
+      console.error("fetchConversations:", error);
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (): Promise<void> => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/users`, {
         headers: { Authorization: `Bearer ${token()}` },
       });
       const data = await res.json();
       if (Array.isArray(data)) setUsers(data);
-    } catch (err) {
-      console.error("fetchUsers:", err);
+    } catch (error) {
+      console.error("fetchUsers:", error);
     }
   };
 
@@ -89,7 +75,7 @@ export default function ConversationPanel({
     fetchUsers();
   }, []);
 
-  // Close menu when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -100,16 +86,16 @@ export default function ConversationPanel({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── open conversation helper ──────────────────────────────
+  // ── Conversation Selection ────────────────────────────────────────────────
 
-  const openConversation = (conv: Conversation) => {
+  const openConversation = (conv: Conversation): void => {
     setSelectedConversationId(conv.id);
     setSelectedConversationName(conv.name ?? conv.other_username ?? "Chat");
   };
 
-  // ── New Chat (DM) flow ────────────────────────────────────
+  // ── New Chat (DM) Flow ────────────────────────────────────────────────────
 
-  const handleSelectUser = async (user: User) => {
+  const handleSelectUser = async (user: User): Promise<void> => {
     setNewChatOpen(false);
     setNewChatSearch("");
 
@@ -127,7 +113,7 @@ export default function ConversationPanel({
         return;
       }
 
-      // Merge into sidebar without a full refetch, then select
+      // Merge into sidebar without full refetch, then open
       setConversations((prev) => {
         const exists = prev.find((c) => c.id === data.id);
         if (exists) return prev;
@@ -135,22 +121,21 @@ export default function ConversationPanel({
       });
 
       openConversation(data);
-    } catch (err) {
-      console.error("handleSelectUser:", err);
+    } catch (error) {
+      console.error("handleSelectUser:", error);
     }
   };
 
-  // ── New Group flow ────────────────────────────────────────
+  // ── New Group Flow ────────────────────────────────────────────────────────
 
-  const toggleGroupUser = (id: number) => {
+  const toggleGroupUser = (id: number): void => {
     setSelectedUserIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  const handleCreateGroup = async () => {
-    if (!groupName.trim()) return;
-    if (selectedUserIds.length === 0) return;
+  const handleCreateGroup = async (): Promise<void> => {
+    if (!groupName.trim() || selectedUserIds.length === 0) return;
 
     setCreatingGroup(true);
 
@@ -166,7 +151,6 @@ export default function ConversationPanel({
 
       if (!res.ok) {
         console.error("Group creation failed:", conv);
-        setCreatingGroup(false);
         return;
       }
 
@@ -190,14 +174,14 @@ export default function ConversationPanel({
       // 4. Add to sidebar and open
       setConversations((prev) => [conv, ...prev]);
       openConversation(conv);
-    } catch (err) {
-      console.error("handleCreateGroup:", err);
+    } catch (error) {
+      console.error("handleCreateGroup:", error);
     } finally {
       setCreatingGroup(false);
     }
   };
 
-  // ── filtered user lists ───────────────────────────────────
+  // ── Filtered User Lists ───────────────────────────────────────────────────
 
   const filteredForChat = users.filter((u) =>
     u.username.toLowerCase().includes(newChatSearch.toLowerCase())
@@ -207,11 +191,11 @@ export default function ConversationPanel({
     u.username.toLowerCase().includes(groupSearch.toLowerCase())
   );
 
-  // ── render ────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
-      {/* ── Panel ── */}
+      {/* Panel */}
       <section className="w-80 h-screen border-r border-zinc-800 bg-zinc-950/30 overflow-y-auto p-4 flex flex-col">
 
         {/* Header */}
@@ -220,7 +204,7 @@ export default function ConversationPanel({
             Messages
           </h3>
 
-          {/* + Button with dropdown */}
+          {/* New conversation dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
@@ -233,20 +217,14 @@ export default function ConversationPanel({
             {menuOpen && (
               <div className="absolute right-0 top-8 z-50 w-44 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl overflow-hidden">
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setNewChatOpen(true);
-                  }}
+                  onClick={() => { setMenuOpen(false); setNewChatOpen(true); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
                 >
                   <MessageCircle size={16} className="text-purple-400" />
                   New Chat
                 </button>
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setNewGroupOpen(true);
-                  }}
+                  onClick={() => { setMenuOpen(false); setNewGroupOpen(true); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors border-t border-zinc-800"
                 >
                   <Users size={16} className="text-purple-400" />
@@ -268,20 +246,15 @@ export default function ConversationPanel({
               <div
                 key={conv.id}
                 onClick={() => openConversation(conv)}
-                className={`
-                  p-3 rounded-xl cursor-pointer transition-colors flex items-center gap-3
-                  ${
-                    selectedConversationId === conv.id
-                      ? "bg-purple-900/60 border border-purple-500/50"
-                      : "bg-zinc-900 hover:bg-zinc-800"
-                  }
-                `}
+                className={`p-3 rounded-xl cursor-pointer transition-colors flex items-center gap-3 ${
+                  selectedConversationId === conv.id
+                    ? "bg-purple-900/60 border border-purple-500/50"
+                    : "bg-zinc-900 hover:bg-zinc-800"
+                }`}
               >
                 {/* Avatar */}
                 <div className="w-9 h-9 rounded-full bg-purple-600/40 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-purple-200">
-                  {conv.is_group
-                    ? (conv.name?.[0] ?? "G").toUpperCase()
-                    : (conv.name?.[0] ?? "?").toUpperCase()}
+                  {(conv.is_group ? conv.name?.[0] ?? "G" : conv.name?.[0] ?? "?").toUpperCase()}
                 </div>
 
                 <div className="min-w-0">
@@ -298,7 +271,7 @@ export default function ConversationPanel({
         </div>
       </section>
 
-      {/* ── New Chat Modal ── */}
+      {/* New Chat Modal */}
       {newChatOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -308,7 +281,6 @@ export default function ConversationPanel({
             className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm mx-4 overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal header */}
             <div className="flex items-center justify-between p-5 border-b border-zinc-800">
               <h2 className="font-semibold text-white">New Chat</h2>
               <button
@@ -319,7 +291,6 @@ export default function ConversationPanel({
               </button>
             </div>
 
-            {/* Search */}
             <div className="p-4">
               <input
                 autoFocus
@@ -331,12 +302,9 @@ export default function ConversationPanel({
               />
             </div>
 
-            {/* User list */}
             <div className="max-h-72 overflow-y-auto pb-3">
               {filteredForChat.length === 0 ? (
-                <p className="text-zinc-500 text-sm text-center py-6">
-                  No users found
-                </p>
+                <p className="text-zinc-500 text-sm text-center py-6">No users found</p>
               ) : (
                 filteredForChat.map((user) => (
                   <button
@@ -359,7 +327,7 @@ export default function ConversationPanel({
         </div>
       )}
 
-      {/* ── New Group Modal ── */}
+      {/* New Group Modal */}
       {newGroupOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -369,7 +337,6 @@ export default function ConversationPanel({
             className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm mx-4 overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal header */}
             <div className="flex items-center justify-between p-5 border-b border-zinc-800 flex-shrink-0">
               <h2 className="font-semibold text-white">New Group</h2>
               <button
@@ -386,7 +353,6 @@ export default function ConversationPanel({
             </div>
 
             <div className="p-4 flex-shrink-0">
-              {/* Group name */}
               <input
                 autoFocus
                 type="text"
@@ -395,8 +361,6 @@ export default function ConversationPanel({
                 placeholder="Group name…"
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-purple-500 transition-colors mb-3"
               />
-
-              {/* Member search */}
               <input
                 type="text"
                 value={groupSearch}
@@ -405,7 +369,7 @@ export default function ConversationPanel({
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-purple-500 transition-colors"
               />
 
-              {/* Selected chips */}
+              {/* Selected user chips */}
               {selectedUserIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedUserIds.map((uid) => {
@@ -428,9 +392,7 @@ export default function ConversationPanel({
             {/* User list */}
             <div className="flex-1 overflow-y-auto">
               {filteredForGroup.length === 0 ? (
-                <p className="text-zinc-500 text-sm text-center py-6">
-                  No users found
-                </p>
+                <p className="text-zinc-500 text-sm text-center py-6">No users found</p>
               ) : (
                 filteredForGroup.map((user) => {
                   const selected = selectedUserIds.includes(user.id);
@@ -449,9 +411,7 @@ export default function ConversationPanel({
                         <p className="text-sm font-medium text-white">{user.username}</p>
                         <p className="text-xs text-zinc-500 truncate">{user.email}</p>
                       </div>
-                      {selected && (
-                        <Check size={16} className="text-purple-400 flex-shrink-0" />
-                      )}
+                      {selected && <Check size={16} className="text-purple-400 flex-shrink-0" />}
                     </button>
                   );
                 })
@@ -462,11 +422,7 @@ export default function ConversationPanel({
             <div className="p-4 border-t border-zinc-800 flex-shrink-0">
               <button
                 onClick={handleCreateGroup}
-                disabled={
-                  !groupName.trim() ||
-                  selectedUserIds.length === 0 ||
-                  creatingGroup
-                }
+                disabled={!groupName.trim() || selectedUserIds.length === 0 || creatingGroup}
                 className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-semibold transition-colors"
               >
                 {creatingGroup

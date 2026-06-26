@@ -1,168 +1,60 @@
 import json
 
-from fastapi import (
-    APIRouter,
-    WebSocket,
-    WebSocketDisconnect
-)
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.websocket.connection_manager import (
-    manager
-)
-
-from app.services.presence import (
-    set_user_online,
-    set_user_offline
-)
-
-from app.services.pubsub import (
-    publish_typing_event
-)
+from app.websocket.connection_manager import manager
+from app.services.presence import set_user_online, set_user_offline
+from app.services.pubsub import publish_typing_event
 
 router = APIRouter()
 
 
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    user_id: int
-):
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    await manager.connect(websocket, user_id)
 
-    print(
-        f"WS CONNECTING USER {user_id}"
-    )
-
-    print(
-        "WS ROUTE MANAGER:",
-        id(manager)
-    )
-
-    await manager.connect(
-        websocket,
-        user_id
-    )
-
-    print(
-        "ACTIVE CONNECTIONS:",
-        len(manager.active_connections)
-    )
-
-    # Redis presence
+    # Mark user online in Redis
     try:
-        set_user_online(
-            user_id
-        )
-
-        print(
-            f"USER {user_id} ONLINE"
-        )
-
-    except Exception as e:
-
-        print(
-            "REDIS ONLINE ERROR:",
-            e
-        )
+        set_user_online(user_id)
+    except Exception:
+        pass
 
     try:
-
         while True:
-
             data = await websocket.receive_text()
 
-            print(
-                "WS RECEIVED:",
-                data
-            )
-
             try:
+                payload = json.loads(data)
 
-                payload = json.loads(
-                    data
-                )
-
-                if (
-                    payload.get("type")
-                    == "typing"
-                ):
-
+                # Handle typing indicator events
+                if payload.get("type") == "typing":
                     try:
-
                         publish_typing_event(
-                            payload[
-                                "conversation_id"
-                            ],
-                            payload[
-                                "user_id"
-                            ]
+                            payload["conversation_id"],
+                            payload["user_id"],
                         )
+                    except Exception:
+                        pass
 
-                    except Exception as e:
+            except json.JSONDecodeError:
+                pass
 
-                        print(
-                            "PUBSUB ERROR:",
-                            e
-                        )
-
-            except Exception as e:
-
-                print(
-                    "JSON ERROR:",
-                    e
-                )
-
-            await manager.broadcast(
-                data
-            )
+            # Broadcast raw event to all connected clients
+            await manager.broadcast(data)
 
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
-        print(
-            f"WS DISCONNECTED USER {user_id}"
-        )
-
-        manager.disconnect(
-            websocket
-        )
-
-        print(
-            "ACTIVE CONNECTIONS:",
-            len(manager.active_connections)
-        )
-
+        # Mark user offline in Redis
         try:
+            set_user_offline(user_id)
+        except Exception:
+            pass
 
-            set_user_offline(
-                user_id
-            )
-
-        except Exception as e:
-
-            print(
-                "REDIS OFFLINE ERROR:",
-                e
-            )
-
-    except Exception as e:
-
-        print(
-            "WS ERROR:",
-            e
-        )
-
-        manager.disconnect(
-            websocket
-        )
-
-        print(
-            "ACTIVE CONNECTIONS:",
-            len(manager.active_connections)
-        )
+    except Exception:
+        manager.disconnect(websocket)
 
 
 @router.get("/ws-test")
 def ws_test():
-
-    return {
-        "status": "router loaded"
-    }
+    return {"status": "router loaded"}

@@ -1,12 +1,6 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime
-)
-
 from datetime import datetime
+
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 
 from app.db.database import Base
 
@@ -14,23 +8,7 @@ from app.db.database import Base
 class Conversation(Base):
     __tablename__ = "conversations"
 
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
-
-    name = Column(
-        String,
-        nullable=True
-    )
-
-    is_group = Column(
-        Boolean,
-        default=False
-    )
-
-    created_at = Column(
-        DateTime,
-        default=datetime.utcnow
-    )
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=True)
+    is_group = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
